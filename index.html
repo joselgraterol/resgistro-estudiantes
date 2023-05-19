@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Data Students</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<style>
+	*{
+		font-family: sans-serif;
+	}
+		.container{
+			/*display: flex;*/	
+			
+		}
+
+
+		.overlay, .overlay-edit{
+			display: none;
+		    position: fixed;
+		    top: 0;
+		    left: 0;
+		    width: 100%;
+		    height: 100%;
+		    background-color: rgba(0, 0, 0, 0.8);
+		    z-index: 2;
+		}
+
+		form{
+			display: flex;
+			flex-direction: column;
+			gap: 10px;
+			width: 80%;
+			/*height: 500px;*/
+			border: 1px solid rgba(0, 0, 0, 0.3);
+			padding: 50px 10px 10px 10px;
+			border-radius: 10px;
+			box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.4);
+			margin-bottom: 100px;
+			position: absolute;
+			background: #fff;
+			left: 50%;
+			top: 50%;
+			transform: translate(-50%, -50%);
+			position: absolute;
+      overflow-y: auto;
+      
+      /*height: 100vh;
+      padding-top: 70px;
+      padding-bottom: 50px;*/
+		}
+		form.show{
+			display: flex;
+
+		}
+
+		form input[type="text"],
+		form input[type="number"]{
+		  
+		  padding: 10px;
+		  border-bottom: 1px solid rgba(0, 0, 0, 0.3);
+		  border-radius: 5px;
+		  font-size: 16px;
+		  
+
+		}
+
+		#sexo{
+			height: 40px;
+		}
+
+		#btn-add, #btn-save{
+			cursor: pointer;
+			background: #1b1b1b;
+			color: #fff;
+			border-radius: 10px;
+			padding: 10px 20px;
+			margin-top: 20px;
+		}
+
+		.students-info{
+			/*padding-right: 250px;*/
+			padding-bottom: 150px;
+		}
+
+		#estudiantes-container{
+			display: grid;
+			grid-template-columns: repeat( auto-fit, minmax(200px, 1fr));
+			gap: 30px;
+			padding: 30px;
+			margin-top: 40px;
+		}
+
+		.estudiante{
+			border: 1px solid rgba(0, 0, 0, 0.3);
+			border-radius: 10px;
+			box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+			padding: 20px;
+			/*width: 300px;*/
+			height: 200px;
+			position: relative;
+		}
+
+		nav{
+			position: sticky;
+			top: 0;
+			left: 0;
+			width: 100%;
+			background-color: #fff;
+			z-index: 1;
+			box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+		}
+
+		.student-data{
+			position: relative;
+			display: flex;
+			overflow-x: auto;
+			overflow-y: hidden;
+			white-space: nowrap;
+			padding: 20px 0;
+			margin: 0;
+			gap: 40px;
+		}
+
+		#sacar-form{
+			font-size: 50px;
+			border-radius: 50%;
+			padding: 5px 20px;
+			background: #1b1b1b;
+			color: #fff;
+			cursor: pointer;
+			position: fixed;
+			bottom: 30px;
+			right: 30px;
+			z-index: 999;
+		}
+
+		#sacar-form.hide{
+			display: none;
+		}
+
+		.close-form{
+			position: absolute;
+			right: 10px;
+			top: 10px;
+			border-radius: 50%;
+			background: none;
+			border: none;
+			transform: rotate(45deg);
+			font-size: 50px;
+			cursor: pointer;
+		}
+
+
+		.mensajeAdd, .mensaje-remove{
+		  position: fixed;
+		  top: 0px;
+		  height: 30px;
+		  left: 50%;
+		  transform: translateX(-50%);
+		  padding: 5px 10px;
+		  color: #fff;
+		  text-align: center;
+		  border-radius: 5px;
+		  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+		  z-index: 4;
+		  width: 50%;
+		  color: #fff;
+		}
+
+		.mensajeAdd{
+		  background: green;
+		}
+
+		.mensaje-remove{
+			background: red;
+		}
+
+		.closed {
+    		display: none;
+		}
+
+		.eliminar, .editar{
+			padding: 10px 20px;
+			color: #fff;
+			position: absolute;
+			cursor: pointer;
+			border-radius: 10px;
+		}
+
+		.eliminar{
+			background: red;
+			bottom: 10px;
+			right: 10px;
+		}
+
+		.editar{
+			background: green;
+			bottom: 10px;
+			right: 115px;
+		}
+
+		
+
+		.search-bar{
+			width: 40%;
+			height: 30px;
+			border-radius: 10px;
+			border-bottom: 1px solid rgba(0, 0, 0, 1.0);
+			position: absolute;
+			left: 50%;
+			transform: translate(-50%);
+			margin-top: -20px;
+		}
+
+		#no-student{
+			display: none;
+			position: relative;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+		}
+
+		@media (min-width: 680px){
+			.student-data{
+				justify-content: center;
+			}
+		}
+
+		@media (min-width: 990px){
+			form{
+				width: 60%;
+				height: 450px;
+			}
+		}
+
+	</style>
+</head>
+<body>
+
+	<nav>
+		<div class="student-data">
+			<h3>n° Machos: <span id="hombres-quantity"></span></h3>
+			<h3>n° Female: <span id="mujeres-quantity"></span></h3>
+			<h3>edad menor: <span id="edad-menor"></span></h3>
+			<h3>edad mayor: <span id="edad-mayor"></span></h3>
+		</div>
+	</nav>
+
+
+<div class="container">
+
+	
+
+	<button id="sacar-form">+</button>
+
+
+	<div class="overlay">
+		<form autocomplete="off">
+			<button class="close-form" type="button">+</button>
+			<h2>Agregar estudiante</h2>
+			<label for="texto-nombre">Nombre</label>
+			<input type="text" id="texto-nombre" placeholder="nombre" required name="nombre">
+
+			<label for="texto-apellido">Apellido</label>
+			<input type="text" id="texto-apellido" placeholder="apellido" required>
+
+			<label for="numero-cedula">Cedula</label>
+			<input type="number" id="numero-cedula" placeholder="cedula" required>
+
+			<label for="numero-edad">Edad</label>
+			<input type="number" id="numero-edad" placeholder="edad" required>
+
+			<select id="sexo" required>
+	            <option value="">-- Select Sexo </option>
+	            <option value="M">M</option>
+	            <option value="F">F</option>
+	        </select>
+
+			<button id="btn-add">Agregar</button>		
+		</form>
+	</div>
+	
+	<div class="students-info">
+		<div id="estudiantes-container"></div>	
+	</div>
+
+	<!-- forma para editar -->
+
+	<div class="overlay-edit">
+  <form autocomplete="off" id="editForm">
+  	<button class="close-form" type="button">+</button>
+    <h2>Editar estudiante</h2>
+    <label for="edit-nombre">Nombre</label>
+    <input type="text" id="edit-nombre" required name="nombre">
+
+    <label for="edit-apellido">Apellido</label>
+    <input type="text" id="edit-apellido" required>
+
+    <label for="edit-cedula">Cedula</label>
+    <input type="number" id="edit-cedula" required>
+
+    <label for="edit-edad">Edad</label>
+    <input type="number" id="edit-edad" required>
+
+    <select id="edit-sexo" required>
+      <option value="">-- Select Sexo </option>
+      <option value="M">M</option>
+      <option value="F">F</option>
+    </select>
+
+    <button  id="btn-save">Guardar</button>
+  </form>
+</div>
+	
+</div>
+
+
+<div id="estudiante-filtrado"></div>
+<p id="no-student">estudiante no encontrado</p>
+
+
+
+
+
+
+<script>
+
+
+let estudiantes = [];
+
+// ------
+let btnAdd = document.getElementById('btn-add');
+let form = document.querySelector("form");
+let overlay = document.querySelector(".overlay");
+let sacarFormBtn = document.getElementById("sacar-form");
+let closeFormBtn = document.querySelectorAll(".close-form");
+let overlayEdit = document.querySelector(".overlay-edit");
+
+sacarFormBtn.addEventListener("click", function () {
+  overlay.style.display = "block";
+  sacarFormBtn.classList.add("hide");
+});
+
+
+
+
+closeFormBtn.forEach((btn) => {
+	btn.addEventListener("click", () => {
+	overlay.style.display = "none";
+	overlayEdit.style.display = "none";
+	sacarFormBtn.classList.remove("hide");
+	})
+})
+
+overlay.addEventListener('click', (event) => {
+if (event.target === overlay) {
+  closePopUpstudent(event);
+ }
+});
+
+overlayEdit.addEventListener('click', (event) => {
+if (event.target === overlayEdit) {
+  closePopUpstudent(event);
+ }
+});
+
+
+function closePopUpstudent(event) {
+  overlay.style.display = "none";
+  overlayEdit.style.display = "none";
+  sacarFormBtn.classList.remove("hide");
+}
+
+
+
+
+
+form.addEventListener("submit", (e) => {
+	e.preventDefault();
+	// informacion estudiantes
+	let textoNombre = document.getElementById('texto-nombre').value;
+	let textoapellido = document.getElementById('texto-apellido').value;
+	let cedula = document.getElementById('numero-cedula').value;
+	let edad = document.getElementById('numero-edad').value;
+	let sexo = document.getElementById('sexo').value;
+
+	estudiantes.push({
+		nombre: textoNombre,
+		apellido: textoapellido,
+		cedula: cedula,
+		edad: edad,
+		sexo: sexo 
+
+	});
+
+	function displayStudents(){
+		let studentContainer = document.getElementById('estudiantes-container');
+  		studentContainer.innerHTML = '';
+
+		for (let i = 0; i < estudiantes.length; i++) {
+			let estudiante = document.createElement('div');
+			estudiante.classList.add("estudiante");
+			estudiante.innerHTML = `
+			  <p><b>Nombre:</b> ${estudiantes[i].nombre}</p>
+			  <p><b>Apellido:</b> ${estudiantes[i].apellido}</p>
+			  <p><b>cedula:</b> ${estudiantes[i].cedula}</p>
+			  <p><b>edad:</b> ${estudiantes[i].edad}</p>
+			  <p><b>sexo:</b> ${estudiantes[i].sexo}</p>
+			`;
+			// eliminar
+			let removeButton = document.createElement("button");
+		      removeButton.classList.add("eliminar");
+		      removeButton.innerHTML = "eliminar"
+		      removeButton.setAttribute("data-student-id", i);
+		      removeButton.onclick = function(event) {
+	          let studentId = event.target.getAttribute("data-student-id");
+	          removeFromList(estudiantes[studentId]);     
+	      	};
+	    estudiante.appendChild(removeButton);
+
+	    // editar
+	    let editButton = document.createElement("button");
+	    editButton.classList.add("editar");
+	    editButton.innerHTML = "editar";
+	    editButton.setAttribute("data-student-id", i);
+	    editButton.onclick = function(event) {
+				let studentId = event.target.getAttribute("data-student-id");
+				fillEditForm(estudiantes[studentId]);
+				sacarFormBtn.classList.add("hide");     
+	    };
+	    estudiante.appendChild(editButton);
+			studentContainer.appendChild(estudiante);
+		}
+	}
+	displayStudents()
+
+	function removeFromList(student) {
+	  let index = estudiantes.indexOf(student);
+	  if (index !== -1) {
+	      estudiantes.splice(index, 1);
+	      notificacionRemove("estudiante eliminado");
+	      updateNumeros()
+	      edades() 
+	      displayStudents()    
+	      
+	  }
+	}
+
+	function fillEditForm(student) {
+  document.getElementById("edit-nombre").value = student.nombre;
+  document.getElementById("edit-apellido").value = student.apellido;
+  document.getElementById("edit-cedula").value = student.cedula;
+  document.getElementById("edit-edad").value = student.edad;
+  document.getElementById("edit-sexo").value = student.sexo;
+  editForm.setAttribute("data-student-id", estudiantes.indexOf(student));
+  overlayEdit.style.display = "block";
+	}
+
+
+	
+	let editForm = document.querySelector("#editForm");
+
+	editForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+  let studentId = editForm.getAttribute("data-student-id");
+  estudiantes[studentId].nombre = document.getElementById("edit-nombre").value;
+  estudiantes[studentId].apellido = document.getElementById("edit-apellido").value;
+  estudiantes[studentId].cedula = document.getElementById("edit-cedula").value;
+  estudiantes[studentId].edad = document.getElementById("edit-edad").value;
+  estudiantes[studentId].sexo = document.getElementById("edit-sexo").value;
+  overlayEdit.style.display = "none";
+  sacarFormBtn.classList.remove("hide");
+  notificacionAdd("estudiante editado");
+  updateNumeros()
+	edades()
+  displayStudents();
+	});
+
+
+
+
+
+
+
+
+
+
+	function updateNumeros(){
+		const arrMap = estudiantes.map(estudiante => estudiante.sexo)
+
+		// machos
+		const machos = arrMap.filter((value) => {
+			return value === "M"
+		})
+		let numeroMachos = document.getElementById("hombres-quantity");
+		let machosLength = machos.length;
+		if (machosLength <= 0) {
+			numeroMachos.innerHTML = "";
+		} else{
+			numeroMachos.innerHTML = machosLength;
+		}
+
+		// female
+		const female = arrMap.filter((value) => {
+			return value === "F"
+		})
+
+		let numeroFemale = document.getElementById("mujeres-quantity");
+		let femaleLength = female.length;
+		if (femaleLength <= 0) {
+			numeroFemale.innerHTML = "";
+		} else{
+			numeroFemale.innerHTML = femaleLength;
+		}
+
+		
+	}
+	updateNumeros()
+
+	function edades(){
+		const arrEdades = estudiantes.map(estudiante => estudiante.edad);
+		const edadesLenght = arrEdades.length;
+		const edadMayor = Math.max(...arrEdades)
+		const edadMenor = Math.min(...arrEdades)
+
+		const elMenor = document.getElementById("edad-menor");
+		const elMayor = document.getElementById("edad-mayor");
+
+		if (edadesLenght >= 2) {
+			elMenor.innerHTML = edadMenor;
+			elMayor.innerHTML = edadMayor;
+		}
+		else{
+			elMenor.innerHTML = "";
+			elMayor.innerHTML = "";
+		}
+		
+
+
+	}
+
+	edades()
+	
+	
+
+	
+	
+	notificacionAdd("estudiante añadido");
+
+	form.reset()
+
+})
+
+
+
+
+
+function notificacionAdd(message){
+  const estudianteAdd = document.createElement("div");
+  estudianteAdd.classList.add("mensajeAdd");
+  estudianteAdd.textContent = message;
+  document.body.appendChild(estudianteAdd);
+
+  setTimeout(() => {
+    estudianteAdd.classList.add("closed");
+  }, 2000);
+}
+
+
+function notificacionRemove(message){
+  const estudianteremove = document.createElement("div");
+  estudianteremove.classList.add("mensaje-remove");
+  estudianteremove.textContent = message;
+  document.body.appendChild(estudianteremove);
+
+  setTimeout(() => {
+    estudianteremove.classList.add("closed");
+  }, 2000);
+}
+
+
+// filtrar estudiantes
+
+// Add an input for the filter
+let filterInput = document.createElement("input");
+filterInput.classList.add("search-bar")
+filterInput.id = "filter-name";
+filterInput.placeholder = "Filtrar por nombre...";
+document.querySelector(".students-info").prepend(filterInput);
+let mensaje = document.getElementById("no-student");
+
+// Add an event listener to filter the list when the input changes
+filterInput.addEventListener("input", function() {
+  let filterValue = this.value.toUpperCase();
+
+  if (estudiantes.length > 0) {
+  	let divs = document.querySelectorAll(".estudiante");
+	  let anyVisible = false;
+	  for (let i = 0; i < divs.length; i++) {
+	    let nameDiv = divs[i].querySelector("p:first-of-type");
+	    if (nameDiv.innerText.toUpperCase().indexOf(filterValue) > -1) {
+	      divs[i].style.display = ""; 
+	      anyVisible = true;
+	    } else {
+	      divs[i].style.display = "none"; 
+	    }
+	  }
+
+	  if (!anyVisible) {
+	  	mensaje.style.display = "block"
+	  } else{
+	  	mensaje.style.display = "none"
+	  }
+  } 
+  
+}); 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
+</body>
+</html>
